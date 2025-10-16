@@ -312,10 +312,10 @@ export default function VisitManagement() {
       console.error('Error loading company settings:', error);
       // Use default settings if API fails
       setCompanySettings({
-        name: 'คลินิกเทคนิคการแพทย์ โปร อินเตอร์ แลบ ไชยา',
-        nameEn: 'Pro inter lab Chaiya',
-        address: '99/5 หมู่ที่ 1 ตำบล เวียง อำเภอ ไชยา จังหวัด สุราษฎร์ธานี 84110',
-        phone: '094-945-6579',
+        name: 'คลินิกเทคนิคการแพทย์ โปร อินเตอร์ แลบ',
+        nameEn: 'Pro inter lab',
+        address: '25/13 ซอยศาลาธรรมสพน์ 13 แขวงศาลาธรรมสพน์ เขตทวีวัฒนา กรุงเทพมหานคร 10170',
+        phone: '',
         email: '',
         website: '',
         taxId: '',
@@ -1297,8 +1297,7 @@ export default function VisitManagement() {
                             list="department-options"
                           />
                           <datalist id="department-options">
-                            <option value="คลินิกเทคนิคการแพทย์ โปร อินเตอร์ แลบ ไชยา" />
-                            <option value="คลินิกเวชกรรมไชยารวมแพทย์" />
+                            <option value="คลินิกเทคนิคการแพทย์ โปร อินเตอร์ แลบ" />
                             <option value="สปสช." />
                           </datalist>
                         </div>
@@ -1312,10 +1311,7 @@ export default function VisitManagement() {
                             list="referringOrganization-options"
                           />
                           <datalist id="referringOrganization-options">
-                            <option value="คลินิกเวชกรรมไชยารวมแพทย์" />
-                            <option value="โรงพยาบาลไชยา" />
-                            <option value="โรงพยาบาลท่าฉาง" />
-                            <option value="โรงพยาบาลท่าชนะ" />
+                            <option value="คลินิกเพชรเกษม 65" />
                           </datalist>
                         </div>
                       </div>

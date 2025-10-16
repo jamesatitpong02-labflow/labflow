@@ -2526,8 +2526,7 @@ export default function PatientRegistration() {
                         className="h-10"
                       />
                       <datalist id="department-options">
-                        <option value="คลินิกเทคนิคการแพทย์ โปร อินเตอร์ แลบ ไชยา" />
-                        <option value="คลินิกเวชกรรมไชยารวมแพทย์" />
+                        <option value="คลินิกเทคนิคการแพทย์ โปร อินเตอร์ แลบ" />
                         <option value="สปสช." />
                       </datalist>
                     </div>
@@ -2546,13 +2545,6 @@ export default function PatientRegistration() {
                       className="h-10"
                     />
                     <datalist id="referring-org-options">
-                      <option value="คลินิกเวชกรรมไชยารวมแพทย์" />
-                      <option value="โรงพยาบาลไชยา" />
-                      <option value="โรงพยาบาลท่าฉาง" />
-                      <option value="โรงพยาบาลท่าชนะ" />
-                      <option value="โรงพยาบาลสุราษฎร์ธานี" />
-                      <option value="ศูนย์สุขภาพชุมชน" />
-                      <option value="คลินิกเอกชน" />
                     </datalist>
                   </div>
                 </div>
