@@ -53,7 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('AuthContext: Using Electron API URL:', apiUrl);
       } else {
         // Use environment variable or fallback URL for web
-        const baseUrl = import.meta.env.VITE_API_URL || 'https://labflow-clinic-backend-skzx.onrender.com';
+        const baseUrl = import.meta.env.VITE_API_URL || 'https://labflow-prointerlab-api.onrender.com';
         if (baseUrl && baseUrl.startsWith('http')) {
           apiUrl = `${baseUrl}/api/auth/login`;
         } else {
@@ -123,7 +123,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (isElectron) {
         apiUrl = 'http://localhost:3001/api/auth/validate';
       } else {
-        const baseUrl = import.meta.env.VITE_API_URL || 'https://labflow-clinic-backend-skzx.onrender.com';
+        const baseUrl = import.meta.env.VITE_API_URL || 'https://labflow-prointerlab-api.onrender.com';
         apiUrl = baseUrl.startsWith('http') ? `${baseUrl}/api/auth/validate` : '/api/auth/validate';
       }
 
@@ -175,7 +175,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (isElectron) {
             apiUrl = 'http://localhost:3001/api/auth/logout';
           } else {
-            const baseUrl = import.meta.env.VITE_API_URL || 'https://labflow-clinic-backend-skzx.onrender.com';
+            const baseUrl = import.meta.env.VITE_API_URL || 'https://labflow-prointerlab-api.onrender.com';
             apiUrl = baseUrl.startsWith('http') ? `${baseUrl}/api/auth/logout` : '/api/auth/logout';
           }
 

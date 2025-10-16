@@ -29,7 +29,7 @@ export default defineConfig({
     __DEV__: false,
     'import.meta.env.DEV': false,
     'import.meta.env.PROD': true,
-    'import.meta.env.VITE_API_URL': '"https://labflow-clinic-backend-skzx.onrender.com"',
+    'import.meta.env.VITE_API_URL': '"https://labflow-prointerlab-api.onrender.com"',
     'import.meta.env.VITE_APP_ENV': '"production"'
   },
   mode: 'production',

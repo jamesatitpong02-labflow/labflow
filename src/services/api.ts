@@ -13,7 +13,7 @@ const getApiBaseUrl = () => {
   } else if (backendStatus === 'production') {
     const prodBaseUrl = import.meta.env.VITE_API_URL || 
                         import.meta.env.VITE_BACKEND_URL || 
-                        'https://labflow-clinic-backend-skzx.onrender.com';
+                        'https://labflow-prointerlab-api.onrender.com';
     return `${prodBaseUrl}/api`;
   }
 
@@ -29,7 +29,7 @@ const getApiBaseUrl = () => {
     // Production environment
     const prodBaseUrl = import.meta.env.VITE_API_URL || 
                         import.meta.env.VITE_BACKEND_URL || 
-                        'https://labflow-clinic-backend-skzx.onrender.com';
+                        'https://labflow-prointerlab-api.onrender.com';
     backendStatus = 'production';
     console.log('Production API Base URL:', prodBaseUrl);
     return `${prodBaseUrl}/api`;
@@ -233,7 +233,7 @@ class ApiService {
         // Retry with production URL
         const prodBaseUrl = import.meta.env.VITE_API_URL || 
                            import.meta.env.VITE_BACKEND_URL || 
-                           'https://labflow-clinic-backend-skzx.onrender.com';
+                           'https://labflow-prointerlab-api.onrender.com';
         const prodUrl = `${prodBaseUrl}/api${endpoint}`;
         
         try {
