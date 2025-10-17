@@ -332,7 +332,7 @@ export default function Reports() {
     return amount.toLocaleString('th-TH');
   };
 
-  // Format date to DD/MM/YYYY
+  // Format date to Thai format: วัน/เดือน/ปี (พ.ศ.)
   const formatDateThai = (dateString: string) => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -345,8 +345,9 @@ export default function Reports() {
     
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+    const buddhistYear = date.getFullYear() + 543;
+    
+    return `${day}/${month}/${buddhistYear}`;
   };
 
   // Convert DD/MM/YYYY to YYYY-MM-DD for input value

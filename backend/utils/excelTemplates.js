@@ -7,6 +7,23 @@ class ExcelTemplateProcessor {
     this.templatesPath = path.join(__dirname, '..', 'templates');
   }
 
+  // Convert date from DD/MM/YYYY to DD/MM/YYYY (Buddhist Era)
+  convertToBuddhistYear(dateString) {
+    if (!dateString || dateString === '-') return dateString;
+    
+    // Check if date is in DD/MM/YYYY format
+    const datePattern = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+    const match = dateString.match(datePattern);
+    
+    if (match) {
+      const [, day, month, year] = match;
+      const buddhistYear = parseInt(year) + 543;
+      return `${day}/${month}/${buddhistYear}`;
+    }
+    
+    return dateString;
+  }
+
   // Create VTS (Visitor) Report Template
   async createVTSTemplate() {
     const workbook = new ExcelJS.Workbook();
@@ -229,8 +246,8 @@ class ExcelTemplateProcessor {
         department: item.department || '-',
         referringOrganization: item.referringOrganization || '-',
         patientRights: item.patientRights || '-',
-        patientCreatedAt: item.patientCreatedAt || '-',
-        visitDate: item.visitDate || '-'
+        patientCreatedAt: this.convertToBuddhistYear(item.patientCreatedAt) || '-',
+        visitDate: this.convertToBuddhistYear(item.visitDate) || '-'
       };
 
       // Style data rows

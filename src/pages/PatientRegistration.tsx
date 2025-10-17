@@ -617,6 +617,23 @@ export default function PatientRegistration() {
           description: `เปิด Visit ${result.visitNumber} สำหรับ ${newPatientForVisit.firstName} ${newPatientForVisit.lastName} แล้ว`,
         });
 
+        // Auto print sticker and medical record for new visits
+        setTimeout(async () => {
+          try {
+            // Print sticker
+            await handlePrintSticker(result);
+            
+            // Print medical record
+            await handlePrintMedicalRecord(result);
+          } catch (printError) {
+            console.error('Auto print error:', printError);
+            showWarningToast({
+              title: "การพิมพ์อัตโนมัติล้มเหลว",
+              description: "Visit ถูกสร้างเรียบร้อยแล้ว แต่ไม่สามารถพิมพ์อัตโนมัติได้",
+            });
+          }
+        }, 1000);
+
         // Scroll to top after successful visit creation
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
@@ -1233,6 +1250,112 @@ export default function PatientRegistration() {
       showErrorToast({
         title: "ไม่สามารถพิมพ์สติ๊กเกอร์ได้",
         description: error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการพิมพ์สติ๊กเกอร์',
+      });
+    }
+  };
+
+  const handlePrintMedicalRecord = async (visit: VisitData) => {
+    try {
+      showInfoToast({
+        title: "กำลังพิมพ์ใบเวชระเบียน",
+        description: `กำลังเตรียมใบเวชระเบียนสำหรับ ${visit.patientName}`,
+      });
+
+      // Get patient data
+      const patientData = visit.patientData || registrationHistory.find(p => p._id === visit.patientId);
+      
+      if (!patientData) {
+        throw new Error('ไม่พบข้อมูลผู้ป่วย');
+      }
+
+      // Get medical printer from settings
+      const { getPrinterByType } = await import('@/lib/printer-utils');
+      const medicalPrinterName = getPrinterByType('medical');
+      
+      console.log('🖨️ Medical printer configuration:', medicalPrinterName);
+      
+      if (!medicalPrinterName) {
+        showWarningToast({
+          title: "ไม่พบเครื่องพิมพ์ใบเวชระเบียน",
+          description: "กรุณาไปที่หน้า 'ตั้งค่า > เครื่องพิมพ์' เพื่อกำหนดเครื่องพิมพ์ใบเวชระเบียน",
+        });
+        return;
+      }
+
+      console.log(`🎯 Using configured medical printer: ${medicalPrinterName}`);
+
+      // Prepare medical record data
+      const { generateMedicalRecordFormHTML, printMedicalRecordForm } = await import('@/utils/medicalRecordForm');
+      const { apiService } = await import('@/services/api');
+      
+      // Get company settings
+      let companyInfo;
+      try {
+        companyInfo = await apiService.getCompanySettings();
+      } catch (error) {
+        // Use default company info if API fails
+        companyInfo = {
+          name: 'คลินิกเทคนิคการแพทย์ โปร อินเตอร์ แลบ',
+          nameEn: 'Pro inter lab',
+          address: '25/13 ซอยศาลาธรรมสพน์ 13 แขวงศาลาธรรมสพน์ เขตทวีวัฒนา กรุงเทพมหานคร 10170',
+          phone: '',
+          email: '',
+          website: '',
+          taxId: '',
+          license: ''
+        };
+      }
+      
+      const formData = {
+        // Company info
+        companyInfo: companyInfo,
+        
+        // Patient info
+        patientln: patientData.ln || '',
+        patientTitle: patientData.title || '',
+        patientFirstName: patientData.firstName,
+        patientLastName: patientData.lastName,
+        patientBirthDate: patientData.birthDate || '',
+        patientAge: patientData.age || 0,
+        patientGender: patientData.gender || 'male',
+        patientIdCard: patientData.idCard || '',
+        patientPhone: patientData.phoneNumber || '',
+        patientAddress: patientData.address || '',
+        
+        // Visit info
+        visitNumber: visit.visitNumber,
+        visitDate: visit.visitDate,
+        
+        // Medical info
+        weight: visit.weight ? parseFloat(String(visit.weight)) : undefined,
+        height: visit.height ? parseFloat(String(visit.height)) : undefined,
+        bloodPressure: visit.bloodPressure || '',
+        pulse: String(visit.pulse || ''),
+        chronicDiseases: visit.chronicDiseases || '',
+        drugAllergies: visit.drugAllergies || '',
+        
+        // Insurance info
+        insuranceType: visit.patientRights || '',
+        insuranceNumber: visit.insuranceNumber || '',
+        
+        // Result delivery
+        resultDeliveryMethod: visit.resultDeliveryMethod || 'รับผลที่คลินิก',
+        resultDeliveryDetails: visit.resultDeliveryDetails || ''
+      };
+
+      // Print the medical record form
+      await printMedicalRecordForm(formData, medicalPrinterName);
+      
+      showSuccessToast({
+        title: "พิมพ์ใบเวชระเบียนสำเร็จ",
+        description: `ส่งใบเวชระเบียน ${visit.patientName} ไปยัง ${medicalPrinterName} เรียบร้อยแล้ว`,
+      });
+      
+    } catch (error) {
+      console.error('Error printing medical record:', error);
+      showErrorToast({
+        title: "ไม่สามารถพิมพ์ใบเวชระเบียนได้",
+        description: error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการพิมพ์ใบเวชระเบียน',
       });
     }
   };

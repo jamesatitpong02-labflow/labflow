@@ -2725,7 +2725,7 @@ async function handleVisitorReport(req, res, { dateFrom, dateTo, department }) {
           // Convert createdAt to Thailand timezone for display
           patientCreatedAt: {
             $dateToString: {
-              format: '%Y-%m-%d',
+              format: '%d/%m/%Y',
               date: '$patient.createdAt',
               timezone: 'Asia/Bangkok'
             }
@@ -2733,7 +2733,7 @@ async function handleVisitorReport(req, res, { dateFrom, dateTo, department }) {
           // Convert visit createdAt to Thailand timezone for display
           visitDate: {
             $dateToString: {
-              format: '%Y-%m-%d',
+              format: '%d/%m/%Y',
               date: '$createdAt',
               timezone: 'Asia/Bangkok'
             }
@@ -3038,7 +3038,7 @@ async function getVisitorReportData({ dateFrom, dateTo, department }) {
           // Convert createdAt to Thailand timezone for display
           patientCreatedAt: {
             $dateToString: {
-              format: '%Y-%m-%d',
+              format: '%d/%m/%Y',
               date: '$patient.createdAt',
               timezone: 'Asia/Bangkok'
             }
@@ -3046,7 +3046,7 @@ async function getVisitorReportData({ dateFrom, dateTo, department }) {
           // Convert visit createdAt to Thailand timezone for display
           visitDate: {
             $dateToString: {
-              format: '%Y-%m-%d',
+              format: '%d/%m/%Y',
               date: '$createdAt',
               timezone: 'Asia/Bangkok'
             }
