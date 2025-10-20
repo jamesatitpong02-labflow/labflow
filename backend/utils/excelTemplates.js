@@ -695,6 +695,161 @@ class ExcelTemplateProcessor {
     return workbook;
   }
 
+  // Create Import Report Template
+  async createImportTemplate() {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('รายงาน Import');
+
+    // Set column widths for import report
+    worksheet.columns = [
+      { header: 'เลขบัตรประชาชน', key: 'idCard', width: 18 },
+      { header: 'LN#', key: 'visitNumber', width: 12 },
+      { header: 'LN', key: 'ln', width: 12 },
+      { header: 'ลำดับรายชื่อ', key: 'sequence', width: 12 },
+      { header: 'หน่วยงาน', key: 'department', width: 15 },
+      { header: 'หมายเหตุ', key: 'note', width: 15 },
+      { header: 'คำนำหน้า', key: 'title', width: 10 },
+      { header: 'ชื่อ', key: 'firstName', width: 15 },
+      { header: 'นามสกุล', key: 'lastName', width: 15 },
+      { header: 'Sex', key: 'gender', width: 8 },
+      { header: 'อายุ', key: 'age', width: 8 },
+      { header: 'เบอร์โทร', key: 'phoneNumber', width: 15 },
+      { header: 'น้ำหนัก (กก.)', key: 'weight', width: 12 },
+      { header: 'ส่วนสูง (ซม.)', key: 'height', width: 12 },
+      { header: 'ความดันโลหิต', key: 'bloodPressure', width: 15 },
+      { header: 'ชีพจร', key: 'pulse', width: 10 },
+      { header: 'น้ำหนัก (kg)', key: 'weight2', width: 12 },
+      { header: 'ความดัน', key: 'bloodPressure2', width: 12 },
+      { header: 'ชีพจร', key: 'pulse2', width: 10 }
+    ];
+
+    // Style header row
+    const headerRow = worksheet.getRow(1);
+    headerRow.font = { bold: true, color: { argb: 'FFFFFF' } };
+    headerRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF6B35' }
+    };
+    headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
+    headerRow.height = 25;
+
+    // Add borders to header
+    headerRow.eachCell((cell) => {
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+    });
+
+    // Add title row
+    worksheet.insertRow(1, ['รายงาน Import']);
+    const titleRow = worksheet.getRow(1);
+    titleRow.font = { bold: true, size: 16 };
+    titleRow.alignment = { horizontal: 'center' };
+    worksheet.mergeCells('A1:S1');
+
+    // Add date range row
+    worksheet.insertRow(2, ['ช่วงวันที่: {{dateRange}}']);
+    const dateRow = worksheet.getRow(2);
+    dateRow.font = { bold: true };
+    worksheet.mergeCells('A2:S2');
+
+    // Add empty row
+    worksheet.insertRow(3, []);
+
+    return workbook;
+  }
+
+  // Process Import Report with template
+  async generateImportReport(data, dateRange, department) {
+    console.log('generateImportReport called with data count:', data ? data.length : 0);
+    console.log('generateImportReport sample data:', data && data.length > 0 ? data[0] : 'No data');
+    
+    const workbook = await this.createImportTemplate();
+    const worksheet = workbook.getWorksheet('รายงาน Import');
+
+    // Update date range
+    const dateCell = worksheet.getCell('A2');
+    dateCell.value = `ช่วงวันที่: ${dateRange}`;
+    if (department && department !== 'all') {
+      dateCell.value += ` | หน่วยงาน: ${department}`;
+    }
+
+    // Add data rows starting from row 4 (after title, date, empty row, header)
+    let rowIndex = 5;
+    data.forEach((item, index) => {
+      const row = worksheet.getRow(rowIndex + index);
+      
+      // Convert gender to M/F format
+      let genderCode = '-';
+      if (item.gender) {
+        const gender = item.gender.toLowerCase();
+        if (gender === 'male' || gender === 'ชาย') {
+          genderCode = 'M';
+        } else if (gender === 'female' || gender === 'หญิง') {
+          genderCode = 'F';
+        } else {
+          genderCode = item.gender;
+        }
+      }
+      
+      row.values = {
+        idCard: (item.idCard && !item.idCard.startsWith('NO_ID')) ? item.idCard : '',
+        visitNumber: item.visitNumber || '-',
+        ln: item.ln || '-',
+        sequence: '', // ลำดับรายชื่อ - empty as requested
+        department: item.department || '-',
+        note: '', // หมายเหตุ - empty as requested
+        title: item.title || '-',
+        firstName: item.firstName || '-',
+        lastName: item.lastName || '-',
+        gender: genderCode,
+        age: item.age || '-',
+        phoneNumber: item.phoneNumber || '-',
+        weight: item.weight || '-',
+        height: item.height || '-',
+        bloodPressure: item.bloodPressure || '-',
+        pulse: item.pulse || '-',
+        weight2: '', // น้ำหนัก (kg) - empty as requested
+        bloodPressure2: '', // ความดัน - empty as requested
+        pulse2: '' // ชีพจร - empty as requested
+      };
+
+      // Style data rows
+      row.alignment = { horizontal: 'left', vertical: 'middle' };
+      row.eachCell((cell) => {
+        cell.alignment = { horizontal: 'left', vertical: 'middle' };
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' }
+        };
+      });
+
+      // Alternate row colors
+      if (index % 2 === 0) {
+        row.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'F8F9FA' }
+        };
+      }
+    });
+
+    // Add summary row
+    const summaryRowIndex = rowIndex + data.length + 1;
+    const summaryRow = worksheet.getRow(summaryRowIndex);
+    summaryRow.values = ['', `รวมทั้งหมด: ${data.length} รายการ`];
+    summaryRow.font = { bold: true };
+    worksheet.mergeCells(`B${summaryRowIndex}:S${summaryRowIndex}`);
+
+    return workbook;
+  }
+
   // Main method to generate report based on type
   async generateReport(reportType, data, options = {}) {
     const { dateRange, department, itemColumns } = options;
@@ -708,6 +863,9 @@ class ExcelTemplateProcessor {
       
       case 'lab':
         return await this.generateLabReport(data, dateRange, department);
+      
+      case 'import':
+        return await this.generateImportReport(data, dateRange, department);
       
       case 'daily':
       case 'monthly':

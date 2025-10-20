@@ -87,7 +87,110 @@ export default function MedicalRecords() {
   const [isSearching, setIsSearching] = useState(false);
   const [expandedRecord, setExpandedRecord] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const [loadingVisits, setLoadingVisits] = useState<string | null>(null);
   const { toast } = useToast();
+
+  // Function to fetch visits for a specific patient
+  const fetchVisitsForPatient = async (patientId: string): Promise<VisitDetail[]> => {
+    try {
+      console.log('🔄 Fetching visits for patientId:', patientId);
+      const visits = await apiService.getVisits();
+      console.log('📊 Total visits from API:', visits.length);
+      console.log('🔍 All visits:', visits);
+      
+      // Check what patientIds exist in visits
+      const uniquePatientIds = [...new Set(visits.map(v => v.patientId))];
+      console.log('🔍 Unique patient IDs in visits:', uniquePatientIds);
+      
+      // Filter visits by patientId (try multiple matching strategies)
+      const matchingVisits = visits.filter(visit => {
+        const visitPatientId = visit.patientId;
+        console.log('🔍 Comparing:', { searchPatientId: patientId, visitPatientId });
+        
+        // Try exact match
+        if (visitPatientId === patientId) {
+          console.log('✅ Exact match found');
+          return true;
+        }
+        
+        // Try matching with ObjectId conversion
+        if (visitPatientId && patientId && visitPatientId.toString() === patientId.toString()) {
+          console.log('✅ String match found');
+          return true;
+        }
+        
+        return false;
+      });
+      
+      console.log('🔍 Matching visits found:', matchingVisits.length);
+      
+      const patientVisits = await Promise.all(
+        matchingVisits.map(async (visit) => {
+            // Try to fetch lab orders and results for this visit
+            let orders: OrderDetail[] = [];
+            let results: ResultDetail[] = [];
+            
+            try {
+              // Fetch lab orders for this visit
+              const labOrders = await apiService.getOrders();
+              orders = labOrders
+                .filter(order => order.visitId === visit._id?.toString())
+                .flatMap(order => 
+                  order.labOrders.map(labOrder => ({
+                    orderId: order._id?.toString() || '',
+                    testName: labOrder.testName || '',
+                    testCode: labOrder.code || '',
+                    price: labOrder.price || 0,
+                    status: order.status || 'pending'
+                  }))
+                );
+            } catch (error) {
+              console.log('⚠️ Could not fetch lab orders for visit:', visit.visitNumber);
+            }
+            
+            try {
+              // Fetch lab results for this visit
+              const labResults = await apiService.getResults();
+              results = orders.length > 0 ? labResults
+                .filter(result => orders.some(order => order.orderId === result.orderId))
+                .flatMap(result => 
+                  result.testResults.map(testResult => ({
+                    resultId: result._id?.toString() || '',
+                    testName: testResult.testName || '',
+                    result: testResult.result || '',
+                    normalRange: testResult.referenceRange || '',
+                    status: testResult.status === 'completed' ? 'normal' : 'pending',
+                    attachedFiles: result.attachedFiles.map(file => ({
+                      fileName: file.fileName,
+                      fileData: file.fileData || '',
+                      fileType: file.fileType,
+                      uploadDate: new Date().toISOString() // Default upload date
+                    })) || []
+                  }))
+                ) : [];
+            } catch (error) {
+              console.log('⚠️ Could not fetch lab results for visit:', visit.visitNumber);
+            }
+            
+            return {
+              visitId: visit._id?.toString() || '',
+              visitNumber: visit.visitNumber || '',
+              visitDate: visit.visitDate || '',
+              visitTime: visit.visitTime || '',
+              department: visit.department || 'ไม่ระบุแผนก',
+              orders,
+              results
+            };
+          })
+      );
+      
+      console.log('✅ Found visits with orders/results for patient:', patientVisits);
+      return patientVisits;
+    } catch (error) {
+      console.error('❌ Error fetching visits for patient:', error);
+      return [];
+    }
+  };
 
 
   // Search medical records from API based on search term - OPTIMIZED
@@ -115,30 +218,79 @@ export default function MedicalRecords() {
       if (rawData.length > 0) {
         console.log('📋 First record structure:', rawData[0]);
         console.log('🔑 Available fields:', Object.keys(rawData[0]));
+        console.log('🔍 Patient ID:', rawData[0].patientId);
+        console.log('🔍 ID Card Number:', rawData[0].idCardNumber);
+        console.log('🔍 Patient Name:', rawData[0].patientName);
+        console.log('🔍 Phone:', rawData[0].phone);
       } else {
         console.log('❌ No records found for query:', searchQuery);
         console.log('💡 Try searching with:');
-        console.log('   - Patient name (ชื่อคนไข้)');
-        console.log('   - Visit number (หมายเลข visit)');
-        console.log('   - Phone number (เบอร์โทร)');
+        console.log('   - Patient name (ชื่อคนไข้): ทดสอบ');
+        console.log('   - ID Card Number (เลขบัตรประชาชน): 1234567890123');
+        console.log('   - Patient ID (รหัสผู้ป่วย): 68100002');
+        console.log('   - Phone number (เบอร์โทร): 0812345678');
+        console.log('   - Visit number (หมายเลข visit): 25100002');
       }
       
-      // Transform data according to backend structure
-      const medicalRecords = rawData.map((record: any) => ({
-        id: record.id || record._id?.toString() || '',
-        patientName: record.patientName || 'ไม่ระบุชื่อ',
-        patientId: record.patientId || '',
-        idCardNumber: record.idCardNumber && record.idCardNumber !== 'ไม่ระบุ' ? record.idCardNumber : null,
-        idCard: record.idCardNumber && record.idCardNumber !== 'ไม่ระบุ' ? record.idCardNumber : null,
-        phone: record.phone && record.phone !== 'ไม่ระบุ' ? record.phone : null,
-        phoneNumber: record.phone && record.phone !== 'ไม่ระบุ' ? record.phone : null,
-        address: record.address || 'ไม่ระบุที่อยู่',
-        lastVisit: record.lastVisit || 'ไม่ระบุ',
-        totalVisits: record.totalVisits || 0,
-        recentTests: record.recentTests || [],
-        status: record.status || 'active',
-        visits: record.visits || []
-      }));
+      // Transform data and fetch visits automatically
+      const medicalRecords = await Promise.all(
+        rawData.map(async (record: any) => {
+          console.log('🔍 Processing record:', record);
+          console.log('🔍 Record visits field:', record.visits);
+          console.log('🔍 Record visitHistory field:', record.visitHistory);
+          console.log('🔍 Record allVisits field:', record.allVisits);
+          
+          // Try different possible field names for visits
+          let visits = record.visits || record.visitHistory || record.allVisits || [];
+          
+          // If visits is not an array, convert to empty array
+          if (!Array.isArray(visits)) {
+            console.log('⚠️ Visits is not an array:', visits);
+            visits = [];
+          }
+          
+          // Transform visits to match our interface
+          let transformedVisits = visits.map((visit: any) => ({
+            visitId: visit.visitId || visit._id?.toString() || visit.id || '',
+            visitNumber: visit.visitNumber || visit.number || '',
+            visitDate: visit.visitDate || visit.date || '',
+            visitTime: visit.visitTime || visit.time || '',
+            department: visit.department || 'ไม่ระบุแผนก',
+            orders: visit.orders || visit.labOrders || visit.testOrders || [],
+            results: visit.results || visit.labResults || visit.testResults || []
+          }));
+          
+          // If no visits found in record, try to fetch them separately
+          if (transformedVisits.length === 0 && (record.id || record.patientId)) {
+            const searchId = record.id || record.patientId;
+            console.log('🔄 No visits in record, fetching separately for ID:', searchId);
+            console.log('🔍 Trying both record.id and record.patientId:', { recordId: record.id, patientId: record.patientId });
+            try {
+              transformedVisits = await fetchVisitsForPatient(searchId);
+            } catch (error) {
+              console.error('❌ Error fetching visits:', error);
+            }
+          }
+          
+          console.log('✅ Final transformed visits:', transformedVisits);
+          
+          return {
+            id: record.id || record._id?.toString() || '',
+            patientName: record.patientName || 'ไม่ระบุชื่อ',
+            patientId: record.patientId || '',
+            idCardNumber: record.idCardNumber && record.idCardNumber !== 'ไม่ระบุ' ? record.idCardNumber : null,
+            idCard: record.idCardNumber && record.idCardNumber !== 'ไม่ระบุ' ? record.idCardNumber : null,
+            phone: record.phone && record.phone !== 'ไม่ระบุ' ? record.phone : null,
+            phoneNumber: record.phone && record.phone !== 'ไม่ระบุ' ? record.phone : null,
+            address: record.address || 'ไม่ระบุที่อยู่',
+            lastVisit: record.lastVisit || 'ไม่ระบุ',
+            totalVisits: record.totalVisits || transformedVisits.length || 0,
+            recentTests: record.recentTests || [],
+            status: record.status || 'active',
+            visits: transformedVisits
+          };
+        })
+      );
       
       console.log('✅ Transformed medical records:', medicalRecords);
       setSearchResults(medicalRecords);
@@ -431,11 +583,42 @@ export default function MedicalRecords() {
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      onClick={() => setExpandedRecord(expandedRecord === record.id ? null : record.id)}
+                      onClick={async () => {
+                        if (expandedRecord === record.id) {
+                          setExpandedRecord(null);
+                        } else {
+                          setExpandedRecord(record.id);
+                          // If no visits in record, try to fetch them
+                          if (record.visits.length === 0 && record.patientId) {
+                            setLoadingVisits(record.id);
+                            try {
+                              const visits = await fetchVisitsForPatient(record.patientId);
+                              // Update the record with fetched visits
+                              setSearchResults(prev => prev.map(r => 
+                                r.id === record.id ? { ...r, visits, totalVisits: visits.length } : r
+                              ));
+                            } catch (error) {
+                              console.error('Error fetching visits:', error);
+                            } finally {
+                              setLoadingVisits(null);
+                            }
+                          }
+                        }
+                      }}
+                      disabled={loadingVisits === record.id}
                       className="text-primary hover:bg-primary/5 h-8 px-3 text-sm"
                     >
-                      {expandedRecord === record.id ? <ChevronUp className="h-3 w-3 mr-1" /> : <ChevronDown className="h-3 w-3 mr-1" />}
-                      {expandedRecord === record.id ? 'ซ่อน' : 'ดูประวัติ'}
+                      {loadingVisits === record.id ? (
+                        <>
+                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary mr-1"></div>
+                          กำลังโหลด...
+                        </>
+                      ) : (
+                        <>
+                          {expandedRecord === record.id ? <ChevronUp className="h-3 w-3 mr-1" /> : <ChevronDown className="h-3 w-3 mr-1" />}
+                          {expandedRecord === record.id ? 'ซ่อน' : 'ดูประวัติ'}
+                        </>
+                      )}
                     </Button>
                   </div>
 
@@ -451,7 +634,14 @@ export default function MedicalRecords() {
                       </div>
                       
                       <div className="space-y-3">
-                        {record.visits.map((visit) => (
+                        {record.visits.length === 0 ? (
+                          <div className="text-center py-6 text-muted-foreground">
+                            <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                            <p className="text-sm">ไม่พบประวัติการมาตรวจ</p>
+                            <p className="text-xs mt-1">อาจเป็นเพราะข้อมูลยังไม่ได้เชื่อมโยงหรือยังไม่มีการบันทึก</p>
+                          </div>
+                        ) : (
+                          record.visits.map((visit) => (
                           <Card key={visit.visitId} className="border-l-2 border-l-primary">
                             <CardContent className="p-3">
                               <div className="flex items-start justify-between mb-3">
@@ -540,7 +730,8 @@ export default function MedicalRecords() {
                               )}
                             </CardContent>
                           </Card>
-                        ))}
+                          ))
+                        )}
                       </div>
                     </div>
                   )}

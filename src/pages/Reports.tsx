@@ -25,6 +25,7 @@ const reportTypes = [
   { id: "vts", name: "รายงานผู้เข้ารับบริการ (VTS)", description: "รายละเอียดผู้เข้ารับบริการ" },
   { id: "salelab", name: "รายงานการขาย (SaleLab)", description: "รายละเอียดการขาย" },
   { id: "lab", name: "รายงานการตรวจ (Lab)", description: "รายละเอียดการตรวจ" },
+  { id: "import", name: "รายงานนำเข้าข้อมูล (Import)", description: "รายงานสำหรับนำเข้าข้อมูล" },
 ];
 
 export default function Reports() {
@@ -184,6 +185,12 @@ export default function Reports() {
         setVisitorData([]);
       } else if (selectedReport === 'lab') {
         console.log('Setting lab data:', response.data);
+        setVisitorData(response.data || []);
+        setReportData([]);
+        setSalesData([]);
+        setItemColumns([]);
+      } else if (selectedReport === 'import') {
+        console.log('Setting import data:', response.data);
         setVisitorData(response.data || []);
         setReportData([]);
         setSalesData([]);
@@ -534,7 +541,7 @@ export default function Reports() {
                       <div>
                         <p className="text-xs text-muted-foreground">คนไข้วันนี้</p>
                         <p className="text-lg font-bold text-foreground">
-                          {selectedReport === 'vts' || selectedReport === 'lab' ? visitorData.length : 
+                          {selectedReport === 'vts' || selectedReport === 'lab' || selectedReport === 'import' ? visitorData.length : 
                            selectedReport === 'salelab' ? salesData.filter(sale => sale.paymentMethod !== 'ฟรี').length : 
                            reportData.length}
                         </p>
@@ -635,6 +642,79 @@ export default function Reports() {
                                 <td className="p-2 text-xs">{visitor.patientRights || visitor.rights || '-'}</td>
                                 <td className="p-2 text-xs">{visitor.patientCreatedAt ? formatDateThai(visitor.patientCreatedAt) : '-'}</td>
                                 <td className="p-2 text-xs">{visitor.visitDate ? formatDateThai(visitor.visitDate) : '-'}</td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    ) : selectedReport === 'import' ? (
+                      // Import Report Table
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b border-primary/20 bg-primary/5 dark:bg-primary/10">
+                            <th className="text-left p-2 font-medium text-foreground text-xs min-w-[100px]">เลขบัตรประชาชน</th>
+                            <th className="text-left p-2 font-medium text-foreground text-xs min-w-[80px]">LN#</th>
+                            <th className="text-left p-2 font-medium text-foreground text-xs min-w-[60px]">LN</th>
+                            <th className="text-left p-2 font-medium text-foreground text-xs min-w-[80px]">ลำดับรายชื่อ</th>
+                            <th className="text-left p-2 font-medium text-foreground text-xs min-w-[100px]">หน่วยงาน</th>
+                            <th className="text-left p-2 font-medium text-foreground text-xs min-w-[80px]">หมายเหตุ</th>
+                            <th className="text-left p-2 font-medium text-foreground text-xs min-w-[60px]">คำนำหน้า</th>
+                            <th className="text-left p-2 font-medium text-foreground text-xs min-w-[80px]">ชื่อ</th>
+                            <th className="text-left p-2 font-medium text-foreground text-xs min-w-[80px]">นามสกุล</th>
+                            <th className="text-left p-2 font-medium text-foreground text-xs min-w-[40px]">Sex</th>
+                            <th className="text-left p-2 font-medium text-foreground text-xs min-w-[40px]">อายุ</th>
+                            <th className="text-left p-2 font-medium text-foreground text-xs min-w-[80px]">เบอร์โทร</th>
+                            <th className="text-left p-2 font-medium text-foreground text-xs min-w-[60px]">น้ำหนัก (กก.)</th>
+                            <th className="text-left p-2 font-medium text-foreground text-xs min-w-[60px]">ส่วนสูง (ซม.)</th>
+                            <th className="text-left p-2 font-medium text-foreground text-xs min-w-[80px]">ความดันโลหิต</th>
+                            <th className="text-left p-2 font-medium text-foreground text-xs min-w-[60px]">ชีพจร</th>
+                            <th className="text-left p-2 font-medium text-foreground text-xs min-w-[60px]">น้ำหนัก (kg)</th>
+                            <th className="text-left p-2 font-medium text-foreground text-xs min-w-[60px]">ความดัน</th>
+                            <th className="text-left p-2 font-medium text-foreground text-xs min-w-[60px]">ชีพจร</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {isLoadingReport ? (
+                            <tr>
+                              <td colSpan={19} className="p-4 text-center">
+                                <div className="flex items-center justify-center gap-2">
+                                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                  <span className="text-muted-foreground text-xs">กำลังโหลดข้อมูลรายงาน...</span>
+                                </div>
+                              </td>
+                            </tr>
+                          ) : visitorData.length === 0 ? (
+                            <tr>
+                              <td colSpan={19} className="p-4 text-center text-muted-foreground text-xs">
+                                ไม่มีข้อมูลสำหรับรายงาน Import ในช่วงวันที่ที่เลือก
+                              </td>
+                            </tr>
+                          ) : (
+                            visitorData.map((visitor, index) => (
+                              <tr key={index} className="border-b border-border hover:bg-muted/30">
+                                <td className="p-2 text-xs">{visitor.idCard && !visitor.idCard.startsWith('NO_ID') ? visitor.idCard : ''}</td>
+                                <td className="p-2 text-xs font-medium">{visitor.referenceNumber || visitor.visitNumber || '-'}</td>
+                                <td className="p-2 text-xs">{visitor.ln || '-'}</td>
+                                <td className="p-2 text-xs">-</td>
+                                <td className="p-2 text-xs">{visitor.department || '-'}</td>
+                                <td className="p-2 text-xs">-</td>
+                                <td className="p-2 text-xs">{visitor.title || visitor.prefix || '-'}</td>
+                                <td className="p-2 text-xs">{visitor.firstName || '-'}</td>
+                                <td className="p-2 text-xs">{visitor.lastName || '-'}</td>
+                                <td className="p-2 text-xs text-center">
+                                  {visitor.gender === 'male' || visitor.gender === 'ชาย' ? 'M' : 
+                                   visitor.gender === 'female' || visitor.gender === 'หญิง' ? 'F' : 
+                                   visitor.gender || '-'}
+                                </td>
+                                <td className="p-2 text-xs text-center">{visitor.age || '-'}</td>
+                                <td className="p-2 text-xs">{visitor.phoneNumber || visitor.phone || '-'}</td>
+                                <td className="p-2 text-xs text-center">{visitor.weight || '-'}</td>
+                                <td className="p-2 text-xs text-center">{visitor.height || '-'}</td>
+                                <td className="p-2 text-xs text-center">{visitor.bloodPressure || '-'}</td>
+                                <td className="p-2 text-xs text-center">{visitor.pulse || '-'}</td>
+                                <td className="p-2 text-xs text-center">-</td>
+                                <td className="p-2 text-xs text-center">-</td>
+                                <td className="p-2 text-xs text-center">-</td>
                               </tr>
                             ))
                           )}
@@ -970,7 +1050,7 @@ export default function Reports() {
 
                   <div className="flex justify-between items-center mt-3 pt-3 border-t border-border">
                     <div className="text-xs text-muted-foreground">
-                      แสดง {selectedReport === 'vts' ? visitorData.length : selectedReport === 'salelab' ? salesData.filter(sale => sale.paymentMethod !== 'ฟรี').length : reportData.length} รายการ จากทั้งหมด {selectedReport === 'vts' ? visitorData.length : selectedReport === 'salelab' ? salesData.filter(sale => sale.paymentMethod !== 'ฟรี').length : reportData.length} รายการ
+                      แสดง {selectedReport === 'vts' || selectedReport === 'lab' || selectedReport === 'import' ? visitorData.length : selectedReport === 'salelab' ? salesData.filter(sale => sale.paymentMethod !== 'ฟรี').length : reportData.length} รายการ จากทั้งหมด {selectedReport === 'vts' || selectedReport === 'lab' || selectedReport === 'import' ? visitorData.length : selectedReport === 'salelab' ? salesData.filter(sale => sale.paymentMethod !== 'ฟรี').length : reportData.length} รายการ
                       {selectedDepartment && selectedDepartment !== 'all' && (
                         <span className="ml-2">
                           • หน่วยงาน: {departments.find(d => d.id === selectedDepartment)?.name}
@@ -983,7 +1063,7 @@ export default function Reports() {
                         size="sm"
                         className="h-8 text-xs"
                         onClick={() => window.print()}
-                        disabled={(selectedReport === 'vts' ? visitorData.length : selectedReport === 'salelab' ? salesData.filter(sale => sale.paymentMethod !== 'ฟรี').length : reportData.length) === 0}
+                        disabled={(selectedReport === 'vts' || selectedReport === 'lab' || selectedReport === 'import' ? visitorData.length : selectedReport === 'salelab' ? salesData.filter(sale => sale.paymentMethod !== 'ฟรี').length : reportData.length) === 0}
                       >
                         <FileText className="h-3 w-3 mr-1" />
                         พิมพ์รายงาน
@@ -992,7 +1072,7 @@ export default function Reports() {
                         size="sm" 
                         className="bg-gradient-success hover:opacity-90 h-8 text-xs"
                         onClick={handleExportPDF}
-                        disabled={(selectedReport === 'vts' ? visitorData.length : selectedReport === 'salelab' ? salesData.filter(sale => sale.paymentMethod !== 'ฟรี').length : reportData.length) === 0}
+                        disabled={(selectedReport === 'vts' || selectedReport === 'lab' || selectedReport === 'import' ? visitorData.length : selectedReport === 'salelab' ? salesData.filter(sale => sale.paymentMethod !== 'ฟรี').length : reportData.length) === 0}
                       >
                         <Download className="h-3 w-3 mr-1" />
                         ดาวน์โหลด PDF
