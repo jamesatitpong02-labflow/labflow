@@ -185,7 +185,7 @@ export function createStickerHTML(data: PatientStickerData): string {
       margin: 0;
       padding: 0;
       font-size: 8px; 
-      line-height: 0.8;
+      line-height: 0.7;
       width: 105mm;
       height: 25mm;
       box-sizing: border-box;
@@ -211,23 +211,23 @@ export function createStickerHTML(data: PatientStickerData): string {
       overflow: hidden;
     }
     .sticker {
-      width: 32mm;
+      width: 31mm;
       height: 25mm;
       padding: 1mm;
       box-sizing: border-box;
       display: flex;
       text-align: left;
       font-size: 6px;
-      line-height: 1.1;
+      line-height: 0.9;
       background: white;
       position: relative;
     }
     .sticker:nth-child(1) {
       margin-left: 3mm;
-      margin-right: 1.5mm;
+      margin-right: 3mm;
     }
     .sticker:nth-child(2) {
-      margin-right: 1.5mm;
+      margin-right: 3mm;
     }
     .sticker:nth-child(3) {
       margin-right: 3mm;
@@ -261,13 +261,13 @@ export function createStickerHTML(data: PatientStickerData): string {
       text-align: left;
       margin-bottom: 0.1mm;
       color: #000000;
-      line-height: 0.6;
+      line-height: 0.5;
     }
     .patient-title-name {
       font-size: 9pt;
       font-weight: bold;
       text-align: left;
-      line-height: 0.6;
+      line-height: 0.5;
       margin-bottom: 0.1mm;
       color: #000000;
     }
@@ -275,7 +275,7 @@ export function createStickerHTML(data: PatientStickerData): string {
       font-size: 9pt;
       font-weight: bold;
       text-align: left;
-      line-height: 0.6;
+      line-height: 0.5;
       margin-bottom: 0.1mm;
       color: #000000;
     }
@@ -283,13 +283,13 @@ export function createStickerHTML(data: PatientStickerData): string {
       font-size: 8pt;
       font-weight: bold;
       text-align: left;
-      line-height: 0.6;
+      line-height: 0.5;
       margin-bottom: 0.1mm;
       width: 100%;
       color: #000000;
     }
     .barcode {
-      height: 6mm;
+      height: 8mm;
       width: 90%;
       margin: 0 auto;
       background: white;
@@ -300,7 +300,7 @@ export function createStickerHTML(data: PatientStickerData): string {
       image-rendering: crisp-edges;
     }
     .barcode svg {
-      height: 6mm;
+      height: 8mm;
       width: 95%;
       shape-rendering: crispEdges;
       image-rendering: -webkit-optimize-contrast;
@@ -404,7 +404,7 @@ export function createStickerHTML(data: PatientStickerData): string {
           JsBarcode("#barcode1", "${data.visitNumber}", {
             format: "CODE128",
             width: 1.2,
-            height: 20,
+            height: 30,
             displayValue: false,
             margin: 0,
             background: "#ffffff",
@@ -414,7 +414,7 @@ export function createStickerHTML(data: PatientStickerData): string {
           JsBarcode("#barcode2", "${data.visitNumber}", {
             format: "CODE128",
             width: 1.2,
-            height: 20,
+            height: 30,
             displayValue: false,
             margin: 0,
             background: "#ffffff",
@@ -424,12 +424,13 @@ export function createStickerHTML(data: PatientStickerData): string {
           JsBarcode("#barcode3", "${data.visitNumber}", {
             format: "CODE128",
             width: 1.2,
-            height: 20,
+            height: 30,
             displayValue: false,
             margin: 0,
             background: "#ffffff",
             lineColor: "#000000"
           });
+
         } else {
           // Fallback if JsBarcode is not loaded
           console.log('JsBarcode not loaded, retrying...');

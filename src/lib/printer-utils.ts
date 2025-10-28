@@ -341,7 +341,7 @@ export const generateSampleStickerContent = (): string => {
             margin: 0;
           }
           .sticker {
-            width: 32mm;
+            width: 31mm;
             height: 25mm;
             padding: 1mm;
             box-sizing: border-box;
@@ -349,19 +349,19 @@ export const generateSampleStickerContent = (): string => {
             flex-direction: column;
             justify-content: space-between;
             font-size: 6px;
-            line-height: 0.8mm;
+            line-height: 0.6mm;
             text-align: center;
             background: white;
           }
           .sticker:nth-child(1) {
-            margin-left: 2mm;
+            margin-left: 3mm;
+            margin-right: 3mm;
           }
           .sticker:nth-child(2) {
-            margin-left: 2mm;
+            margin-right: 3mm;
           }
           .sticker:nth-child(3) {
-            margin-left: 2mm;
-            margin-right: 0.2mm;
+            margin-right: 3mm;
           }
           .visit-number {
             font-size: 12px;
@@ -376,7 +376,7 @@ export const generateSampleStickerContent = (): string => {
             font-size: 8px;
             font-weight: 500;
             text-align: left;
-            line-height: 0.8;
+            line-height: 0.7;
             margin-bottom: 0.5mm;
             color: #000000;
             text-shadow: none;
@@ -386,7 +386,7 @@ export const generateSampleStickerContent = (): string => {
             font-size: 8px;
             font-weight: 500;
             text-align: left;
-            line-height: 0.8;
+            line-height: 0.7;
             margin-bottom: 0.5mm;
             color: #000000;
             text-shadow: none;
@@ -396,7 +396,7 @@ export const generateSampleStickerContent = (): string => {
             font-size: 7px;
             font-weight: 500;
             text-align: left;
-            line-height: 0.8;
+            line-height: 0.7;
             margin-bottom: 0.5mm;
             color: #000000;
             text-shadow: none;
@@ -466,7 +466,7 @@ export const generateSampleStickerContent = (): string => {
                 JsBarcode("#barcode1", "${sampleData.visitNumber}", {
                   format: "CODE128",
                   width: 1.2,
-                  height: 20,
+                  height: 30,
                   displayValue: false,
                   margin: 0,
                   background: "#ffffff",
@@ -476,7 +476,7 @@ export const generateSampleStickerContent = (): string => {
                 JsBarcode("#barcode2", "${sampleData.visitNumber}", {
                   format: "CODE128",
                   width: 1.2,
-                  height: 20,
+                  height: 30,
                   displayValue: false,
                   margin: 0,
                   background: "#ffffff",
@@ -486,7 +486,7 @@ export const generateSampleStickerContent = (): string => {
                 JsBarcode("#barcode3", "${sampleData.visitNumber}", {
                   format: "CODE128",
                   width: 1.2,
-                  height: 20,
+                  height: 30,
                   displayValue: false,
                   margin: 0,
                   background: "#ffffff",
